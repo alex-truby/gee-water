@@ -14,3 +14,9 @@ viirs_vis_params = {
     # 'palette': ['black', 'blue', 'purple', 'cyan', 'green', 'yellow', 'red'] # optional colorful palette
     'palette': ['black', 'white']
 }
+
+ndvi_vis_params = {
+    'min': 0,
+    'max': 1,
+    'palette': ['brown', 'white', 'green']
+}

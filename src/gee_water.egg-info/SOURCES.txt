@@ -3,10 +3,12 @@ README.md
 pyproject.toml
 setup.cfg
 setup.py
+notebooks/ndvi_baja.ipynb
 src/gee_water/__init__.py
 src/gee_water/masks.py
 src/gee_water/utils.py
 src/gee_water/vis_params.py
+src/gee_water/visualization_utils.py
 src/gee_water.egg-info/PKG-INFO
 src/gee_water.egg-info/SOURCES.txt
 src/gee_water.egg-info/dependency_links.txt
