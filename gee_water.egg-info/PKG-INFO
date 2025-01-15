@@ -1,0 +1,5 @@
+Metadata-Version: 2.1
+Name: gee-water
+Version: 0.0.0
+Requires-Python: >=3.9
+Provides-Extra: dev

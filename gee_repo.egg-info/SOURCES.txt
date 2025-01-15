@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+gee_repo.egg-info/PKG-INFO
+gee_repo.egg-info/SOURCES.txt
+gee_repo.egg-info/dependency_links.txt
+gee_repo.egg-info/requires.txt
+gee_repo.egg-info/top_level.txt
