@@ -1,7 +1,10 @@
 README.md
 pyproject.toml
+requirements.txt
 setup.cfg
 setup.py
+dist/gee_repo-0.1.0-py3.11.egg
+dist/gee_water-0.0.0-py3.11.egg
 gee_water.egg-info/PKG-INFO
 gee_water.egg-info/SOURCES.txt
 gee_water.egg-info/dependency_links.txt
