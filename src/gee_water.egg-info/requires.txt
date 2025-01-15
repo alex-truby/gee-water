@@ -1,8 +1,9 @@
 numpy
 pandas
-earthengine-api
 geemap
 plotly
+geopandas
+earthengine-api>=0.1.344
 
 [dev]
 pre-commit

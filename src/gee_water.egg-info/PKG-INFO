@@ -1,12 +1,13 @@
 Metadata-Version: 2.2
-Name: gee-water
+Name: gee_water
 Version: 0.0.0
-Requires-Python: >=3.9
+Requires-Python: >=3.11
 Requires-Dist: numpy
 Requires-Dist: pandas
-Requires-Dist: earthengine-api
 Requires-Dist: geemap
 Requires-Dist: plotly
+Requires-Dist: geopandas
+Requires-Dist: earthengine-api>=0.1.344
 Provides-Extra: dev
 Requires-Dist: pre-commit; extra == "dev"
 Requires-Dist: black; extra == "dev"

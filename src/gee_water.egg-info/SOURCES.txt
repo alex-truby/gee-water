@@ -1,0 +1,15 @@
+.gitignore
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+src/gee_water/__init__.py
+src/gee_water/masks.py
+src/gee_water/utils.py
+src/gee_water/vis_params.py
+src/gee_water.egg-info/PKG-INFO
+src/gee_water.egg-info/SOURCES.txt
+src/gee_water.egg-info/dependency_links.txt
+src/gee_water.egg-info/not-zip-safe
+src/gee_water.egg-info/requires.txt
+src/gee_water.egg-info/top_level.txt
