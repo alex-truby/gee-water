@@ -1,36 +1,6 @@
 import ee
 import pandas as pd
 
-def mask_hls_l30_cloud_shadow(image):
-    """
-    Masks clouds, cloud shadows, snow/ice, and fill pixels from an HLS L30 image.
-
-    This function uses the `Fmask` band from the Harmonized Landsat and Sentinel-2 
-    (HLS) L30 dataset to exclude specific pixel types based on predefined values:
-      - 0 = clear land (kept)
-      - 1 = clear water (commented out, optional for exclusion)
-      - 2 = cloud (masked)
-      - 3 = cloud shadow (masked)
-      - 4 = snow/ice (masked)
-      - 255 = fill/no data (masked)
-
-    Args:
-        image (ee.Image): A Google Earth Engine Image object from the HLS L30 dataset, 
-                          containing an `Fmask` band.
-
-    Returns:
-        ee.Image: The input image with a mask applied to exclude specified pixel types.
-    """
-    fmask = image.select("Fmask")
-    # Keep only clear land (0) or clear water (optional)
-    mask = (fmask.neq(2)   # Exclude cloud
-            # .And(fmask.neq(1))  # Exclude water (optional, currently commented)
-            .And(fmask.neq(3))  # Exclude cloud shadow
-            .And(fmask.neq(4))  # Exclude snow/ice
-            .And(fmask.neq(255))  # Exclude fill/no data
-           )
-    return image.updateMask(mask)
-
 
 def add_ndvi_l30(image):
     """
@@ -184,6 +154,36 @@ def get_time_series(monthly_dict, band_name, roi):
     df = df.sort_values(by='date').reset_index(drop=True)
 
     return df
+
+
+def get_monthly_image(collection, band, year, month):
+    """
+    Creates a monthly mean NDVI image from a collection for a specified year and month.
+
+    This function filters the input collection by date, selects the specified band, 
+    calculates the mean for the given month, and returns the resulting image with 
+    a renamed band to indicate the year and month.
+
+    Args:
+        collection (ee.ImageCollection): The input ImageCollection containing NDVI or 
+                                         similar vegetation index data.
+        band (str): The band name to select for NDVI or other vegetation index.
+        year (int): The year for the monthly aggregation.
+        month (int): The month for the monthly aggregation (1-12).
+
+    Returns:
+        ee.Image: A single image representing the monthly mean NDVI (or specified band), 
+                  with the band renamed to include the year and month in the format 
+                  `{band}_{year}_{month}`.
+    """
+    start_date = ee.Date.fromYMD(year, month, 1)
+    end_date = start_date.advance(1, 'month')
+
+    return (collection
+            .filterDate(start_date, end_date)
+            .select(band)
+            .mean()
+            .rename(f'{band}_{year}_{month}'))
 
 
 

@@ -1,22 +1,29 @@
-def mask_landsat_c2_l2_sr(image):
+def mask_hls_l30_cloud_shadow(image):
     """
-    Masks clouds and cloud shadows from a Landsat Collection 2 Level-2 Surface Reflectance (C2 L2 SR) image.
+    Masks clouds, cloud shadows, snow/ice, and fill pixels from an HLS L30 image.
 
-    This function uses the 'QA_PIXEL' band from the input image to identify and mask out pixels flagged as 
-    cloud or cloud shadow. The cloud and cloud shadow information is stored in bits 3 and 4 of the 'QA_PIXEL' band.
+    This function uses the `Fmask` band from the Harmonized Landsat and Sentinel-2 
+    (HLS) L30 dataset to exclude specific pixel types based on predefined values:
+      - 0 = clear land (kept)
+      - 1 = clear water (commented out, optional for exclusion)
+      - 2 = cloud (masked)
+      - 3 = cloud shadow (masked)
+      - 4 = snow/ice (masked)
+      - 255 = fill/no data (masked)
 
     Args:
-        image (ee.Image): A Google Earth Engine Image object representing Landsat C2 L2 SR data. 
-                          The image must contain a 'QA_PIXEL' band.
+        image (ee.Image): A Google Earth Engine Image object from the HLS L30 dataset, 
+                          containing an `Fmask` band.
 
     Returns:
-        ee.Image: The input image with a mask applied, masking out cloud and cloud shadow pixels.
+        ee.Image: The input image with a mask applied to exclude specified pixel types.
     """
-    # 'QA_PIXEL' band
-    qa = image.select('QA_PIXEL')
-    # Bits 3 and 4 are cloud and cloud shadow flags
-    cloud_shadow = (1 << 3)
-    clouds = (1 << 4)
-    mask = qa.bitwiseAnd(cloud_shadow).eq(0).And(
-           qa.bitwiseAnd(clouds).eq(0))
+    fmask = image.select("Fmask")
+    # Keep only clear land (0) or clear water (optional)
+    mask = (fmask.neq(2)   # Exclude cloud
+            # .And(fmask.neq(1))  # Exclude water (optional, currently commented)
+            .And(fmask.neq(3))  # Exclude cloud shadow
+            .And(fmask.neq(4))  # Exclude snow/ice
+            .And(fmask.neq(255))  # Exclude fill/no data
+           )
     return image.updateMask(mask)
