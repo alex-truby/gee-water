@@ -6,6 +6,7 @@ setup.py
 notebooks/ndvi_baja.ipynb
 notebooks/soil_moisture_baja.ipynb
 src/gee_water/__init__.py
+src/gee_water/analysis.py
 src/gee_water/masks.py
 src/gee_water/utils.py
 src/gee_water/vis_params.py
@@ -16,3 +17,4 @@ src/gee_water.egg-info/dependency_links.txt
 src/gee_water.egg-info/not-zip-safe
 src/gee_water.egg-info/requires.txt
 src/gee_water.egg-info/top_level.txt
+static/html/ndvi_test_2.html
