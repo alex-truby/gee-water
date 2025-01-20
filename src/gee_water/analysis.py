@@ -1,4 +1,5 @@
 from scipy.stats import linregress
+import numpy as np
 
 def check_trend_significance(
     df,
@@ -57,3 +58,16 @@ def check_trend_significance(
     is_significant = p_value < alpha
     
     return slope_per_day, slope_per_year, p_value, is_significant
+
+
+def get_slope(group, group_col_name, analysis_col_name):
+    """
+    Given a subset of df containing one HYBAS_ID across multiple years,
+    compute the linear slope of precip_sum vs. year using polyfit.
+    """
+    x = group[group_col_name].values
+    y = group[analysis_col_name].values
+
+    # polyfit(x, y, 1) -> returns [slope, intercept]
+    slope, intercept = np.polyfit(x, y, 1)
+    return slope

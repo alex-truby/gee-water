@@ -230,3 +230,77 @@ def annual_agg_ic(image_collection, agg_type, start_year, end_year):
     for y in range(start_year, end_year + 1):
         images.append(agg_for_year(y))
     return ee.ImageCollection(images)
+
+
+def get_annual_median_image(year, roi, gee_image_collection_id):
+    start_date = ee.Date.fromYMD(year, 1, 1)
+    end_date = ee.Date.fromYMD(year, 12, 31)
+
+    # Load the VIIRS Nighttime Lights Monthly Data
+    ic = (ee.ImageCollection(gee_image_collection_id) #NOAA/VIIRS/DNB/MONTHLY_V1/VCMCFG
+             .filterDate(start_date, end_date)
+             .filterBounds(roi)
+             .select(['avg_rad']))  # Select the average radiance band
+
+    # Create a median composite for the year
+    median_image = ic.median()
+
+    return median_image
+
+
+def reduce_to_basin_means_annual(image, basins):
+    # adjust 'scale' based on dataset's native resolution
+    fc = image.reduceRegions(
+        collection = basins,
+        reducer    = ee.Reducer.mean(),
+        scale      = 10000 
+    )
+    return fc.map(lambda f: f.set({'year': image.get('year')}))
+
+
+def get_annual_pdf(
+        feature_collection: ee.featurecollection.FeatureCollection,
+        agg_type: str,
+        output_col_name: str
+):
+    features_dict = feature_collection.getInfo()
+    records = []
+
+    for f in features_dict['features']:
+        props = f['properties']
+        # HYBAS is the basin ID as outlined by the WWF basin dataset
+        basin_id = props.get('HYBAS_ID') # or f['id']  # fallback to feature id if needed
+
+        # The sum of precipitation is stored under 'sum' by default with ee.Reducer.sum()
+        aggregate = props.get(agg_type)
+
+        # We'll store year/month as integers, then create a date from them
+        year  = int(props['year'])
+
+        records.append([basin_id, year, aggregate])
+    
+    pdf = pd.DataFrame(records, columns=['HYBAS_ID', 'year', output_col_name])
+
+    return pdf
+
+
+def get_basin_geodataframe(basin_level_id, bounding_geom):
+    basins= ee.FeatureCollection(basin_level_id).filterBounds(bounding_geom)
+    
+    basins_gdf = ee.data.computeFeatures({
+        'expression': basins,
+        'fileFormat': 'GEOPANDAS_GEODATAFRAME'
+    })
+
+    # set CRS
+    basins_gdf.crs = 'EPSG:4326'
+    return basins_gdf
+
+
+def scale_modis_LST_to_Celsius(image):
+    # Select the daytime LST band
+    lst_day = image.select("LST_Day_1km")
+    # Apply scale factor 0.02 to get Kelvin, then subtract 273.15 for Celsius
+    lst_celsius = lst_day.multiply(0.02).subtract(273.15)
+    # Rename the band (optional) and copy original properties (time, etc.)
+    return lst_celsius.rename("LST_Celsius").copyProperties(image, image.propertyNames())

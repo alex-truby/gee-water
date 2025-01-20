@@ -2,6 +2,9 @@ import numpy as np
 import plotly.graph_objects as go
 import geemap
 from matplotlib.colors import to_rgb
+import json
+import plotly.express as px
+
 
 
 
@@ -123,7 +126,7 @@ def plot_multiple_timeseries_with_trendlines_plotly(
 
 
 
-def create_split_viirs_map(
+def create_split_map(
         left_image, 
         right_image,
         left_image_label,
@@ -187,3 +190,64 @@ def create_split_viirs_map(
 
     # Return the interactive map
     return Map
+
+
+def create_choropleth_map(
+    gdf,
+    color_by_value,
+    color_continuous_scale=[
+        (0.00, "blue"),   # 0% of the range -> blue
+        (0.50, "white"),  # 50% of the range -> white (mid)
+        (1.00, "red")     # 100% of the range -> red
+    ],
+    color_continuous_midpoint=0,
+    legend_title="Color Legend",
+    legend_font_size=10
+):
+    """
+    Creates a choropleth map with custom color scaling and a smaller legend.
+
+    Parameters:
+    - gdf (GeoDataFrame): The GeoDataFrame containing spatial data.
+    - color_by_value (str): Column to color the map by.
+    - color_continuous_scale (list): Color scale for the choropleth.
+    - color_continuous_midpoint (float): Midpoint value for the color scale.
+    - legend_title (str): Title for the legend.
+    - legend_font_size (int): Font size for the legend.
+
+    Returns:
+    - None: Displays the map.
+    """
+    # 1) Convert the GeoDataFrame to a GeoJSON dictionary
+    geojson_data = json.loads(gdf.to_json())
+
+    # 2) Create a choropleth mapbox
+    fig = px.choropleth_mapbox(
+        data_frame=gdf,
+        geojson=geojson_data,
+        locations="HYBAS_ID",                 # column in gdf to match with geojson features
+        featureidkey="properties.HYBAS_ID",    # feature property in geojson_data
+        color=color_by_value,                # which column to color by
+        hover_data=["HYBAS_ID"],  
+        center={"lat": 25, "lon": -112},  
+        mapbox_style="carto-positron",
+        zoom=5.5,                          
+        opacity=0.5,                         # polygon transparency
+        color_continuous_scale=color_continuous_scale,
+        color_continuous_midpoint=color_continuous_midpoint
+    )
+
+    # 3) Update legend title and font size
+    fig.update_layout(
+        coloraxis_colorbar=dict(
+            title=legend_title,
+            title_font=dict(size=legend_font_size),
+            tickfont=dict(size=legend_font_size)
+        ),
+        mapbox_style="carto-positron",
+        mapbox_zoom=5.5,
+        margin={"r": 0, "t": 0, "l": 0, "b": 0}
+    )
+
+    # 4) Show the map
+    fig.show()
