@@ -4,6 +4,7 @@ pyproject.toml
 setup.cfg
 setup.py
 notebooks/basin_analysis.ipynb
+notebooks/development.ipynb
 notebooks/ndvi_baja.ipynb
 notebooks/soil_moisture_baja.ipynb
 src/gee_water/__init__.py

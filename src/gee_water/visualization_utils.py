@@ -6,20 +6,19 @@ import json
 import plotly.express as px
 
 
-
-
 def plot_multiple_timeseries_with_trendlines_plotly(
     df_list,
-    date_col='date',
-    value_col='value',
+    date_col="date",
+    value_col="value",
     labels=None,
     x_interval_months=6,
-    title='Time Series Comparison',
-    ylabel='Value (units)'
+    title="Time Series Comparison",
+    ylabel="Value (units)",
+    html_export_location=None
 ):
     """
     Plots multiple time series (date vs. value) with linear trend lines in a single Plotly figure.
-    Uses "days since earliest global date" as the x-values for linear regression, 
+    Uses "days since earliest global date" as the x-values for linear regression,
     which avoids extremely large timestamp numbers in nanoseconds.
 
     Args:
@@ -61,24 +60,17 @@ def plot_multiple_timeseries_with_trendlines_plotly(
         df_sorted = df.sort_values(by=date_col).reset_index(drop=True)
 
         # Calculate "days since global earliest date" for slope-fitting
-        df_sorted['days_since_start'] = (
+        df_sorted["days_since_start"] = (
             df_sorted[date_col] - global_earliest_date
         ).dt.days
 
         # x-values for plotting (actual dates) vs. x-values for slope-fitting (days_since_start)
         x_dates = df_sorted[date_col]
-        x_days = df_sorted['days_since_start']
+        x_days = df_sorted["days_since_start"]
         y_vals = df_sorted[value_col]
 
         # Plot the main time series
-        fig.add_trace(
-            go.Scatter(
-                x=x_dates,
-                y=y_vals,
-                mode='lines',
-                name=labels[i]
-            )
-        )
+        fig.add_trace(go.Scatter(x=x_dates, y=y_vals, mode="lines", name=labels[i]))
 
         # Compute trend (slope) per day via np.polyfit
         coeffs = np.polyfit(x_days, y_vals, 1)  # linear fit
@@ -95,9 +87,9 @@ def plot_multiple_timeseries_with_trendlines_plotly(
             go.Scatter(
                 x=x_dates,  # still plot trend line against real dates
                 y=trend_line_y,
-                mode='lines',
-                line=dict(dash='dash'),
-                name=f"{labels[i]} Trend (slope={slope_per_year:.5f}/yr)"
+                mode="lines",
+                line=dict(dash="dash"),
+                name=f"{labels[i]} Trend (slope={slope_per_year:.5f}/yr)",
             )
         )
 
@@ -107,43 +99,36 @@ def plot_multiple_timeseries_with_trendlines_plotly(
 
     fig.update_layout(
         title=title,
-        xaxis=dict(
-            title='Date',
-            dtick=dtick_str,
-            tickformat='%Y-%m'
-        ),
-        yaxis=dict(
-            title=ylabel
-        ),
-        legend=dict(
-            x=0.01,
-            y=0.99
-        ),
-        margin=dict(l=60, r=40, t=60, b=60)
+        xaxis=dict(title="Date", dtick=dtick_str, tickformat="%Y-%m"),
+        yaxis=dict(title=ylabel),
+        legend=dict(x=0.01, y=0.99),
+        margin=dict(l=60, r=40, t=60, b=60),
     )
+
+    if html_export_location:
+        fig.write_html(html_export_location)
 
     return fig
 
 
-
 def create_split_map(
-        left_image, 
-        right_image,
-        left_image_label,
-        right_image_label,
-        vis_params,
-        mep_center_coords,
-        zoom,
-        legend_title,
-        legend_labels,
-        html_export_location=None
+    left_image,
+    right_image,
+    left_image_label,
+    right_image_label,
+    vis_params,
+    mep_center_coords,
+    zoom,
+    legend_title,
+    legend_labels,
+    html_export_location=None,
 ):
     """
     Creates a split map to visually compare two VIIRS images side by side.
 
-    This function generates an interactive map with a split screen feature, allowing users 
-    to compare two Earth Engine images using geemap. The left and right images are labeled 
-    and styled using the provided visualization parameters. A legend is added to the map, 
+    This function generates an interactive map with a split screen feature, allowing users
+    to compare two Earth Engine images using geemap. The left and right images are labeled
+    and styled using the provided visualization parameters. A legend is added to the map,
     and the map can optionally be exported to an HTML file.
 
     Args:
@@ -156,7 +141,7 @@ def create_split_map(
         zoom (int): The initial zoom level of the map.
         legend_title (str): Title of the legend displayed on the map.
         legend_labels (list): Labels corresponding to the colors in the visualization palette.
-        html_export_location (str, optional): File path to save the map as an HTML file. 
+        html_export_location (str, optional): File path to save the map as an HTML file.
                                               If not provided, the map is not exported.
 
     Returns:
@@ -175,14 +160,24 @@ def create_split_map(
     left_label_position = "topleft"
     right_label_position = "topright"
 
-    Map.add_text(left_image_label, position=left_label_position, fontcolor='gray', fontsize='28')
-    Map.add_text(right_image_label, position=right_label_position, fontcolor='gray', fontsize='28')
+    Map.add_text(
+        left_image_label, position=left_label_position, fontcolor="gray", fontsize="28"
+    )
+    Map.add_text(
+        right_image_label,
+        position=right_label_position,
+        fontcolor="gray",
+        fontsize="28",
+    )
 
     # Add a legend to the map
     Map.add_legend(
-        legend_title=legend_title, 
-        colors=[tuple(int(c * 255) for c in to_rgb(color)) for color in vis_params['palette']], 
-        labels=legend_labels
+        legend_title=legend_title,
+        colors=[
+            tuple(int(c * 255) for c in to_rgb(color))
+            for color in vis_params["palette"]
+        ],
+        labels=legend_labels,
     )
 
     if html_export_location:
@@ -196,13 +191,14 @@ def create_choropleth_map(
     gdf,
     color_by_value,
     color_continuous_scale=[
-        (0.00, "blue"),   # 0% of the range -> blue
+        (0.00, "blue"),  # 0% of the range -> blue
         (0.50, "white"),  # 50% of the range -> white (mid)
-        (1.00, "red")     # 100% of the range -> red
+        (1.00, "red"),  # 100% of the range -> red
     ],
     color_continuous_midpoint=0,
     legend_title="Color Legend",
-    legend_font_size=10
+    legend_font_size=10,
+    html_export_location=None,
 ):
     """
     Creates a choropleth map with custom color scaling and a smaller legend.
@@ -225,16 +221,16 @@ def create_choropleth_map(
     fig = px.choropleth_mapbox(
         data_frame=gdf,
         geojson=geojson_data,
-        locations="HYBAS_ID",                 # column in gdf to match with geojson features
-        featureidkey="properties.HYBAS_ID",    # feature property in geojson_data
-        color=color_by_value,                # which column to color by
-        hover_data=["HYBAS_ID"],  
-        center={"lat": 25, "lon": -112},  
+        locations="HYBAS_ID",  # column in gdf to match with geojson features
+        featureidkey="properties.HYBAS_ID",  # feature property in geojson_data
+        color=color_by_value,  # which column to color by
+        hover_data=["HYBAS_ID"],
+        center={"lat": 25.5, "lon": -112},
         mapbox_style="carto-positron",
-        zoom=5.5,                          
-        opacity=0.5,                         # polygon transparency
+        zoom=5.5,
+        opacity=0.5,  # polygon transparency
         color_continuous_scale=color_continuous_scale,
-        color_continuous_midpoint=color_continuous_midpoint
+        color_continuous_midpoint=color_continuous_midpoint,
     )
 
     # 3) Update legend title and font size
@@ -242,12 +238,18 @@ def create_choropleth_map(
         coloraxis_colorbar=dict(
             title=legend_title,
             title_font=dict(size=legend_font_size),
-            tickfont=dict(size=legend_font_size)
+            tickfont=dict(size=legend_font_size),
+            x=0.02,  # Position on the left (0 is far left, 1 is far right)
+            y=0.5,  # Centered vertically
         ),
         mapbox_style="carto-positron",
         mapbox_zoom=5.5,
-        margin={"r": 0, "t": 0, "l": 0, "b": 0}
+        margin={"r": 0, "t": 0, "l": 0, "b": 0},
     )
+
+    # export the map
+    if html_export_location:
+        fig.write_html(html_export_location)
 
     # 4) Show the map
     fig.show()

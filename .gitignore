@@ -7,3 +7,9 @@ __pycache__/
 
 # Ignore local virtual environment directory
 .venv/
+
+# Ignore images in local directory
+local_images/
+
+static/html/
+static/images/

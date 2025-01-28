@@ -10,7 +10,7 @@ landsat_vis_params = {
 viirs_vis_params = {
     'bands': ['avg_rad'],
     'min': 0,
-    'max': 60,  # Adjust based on the data range; 60 is a common upper limit
+    'max': 60,  
     # 'palette': ['black', 'blue', 'purple', 'cyan', 'green', 'yellow', 'red'] # optional colorful palette
     'palette': ['black', 'white']
 }
